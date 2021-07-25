@@ -36,23 +36,28 @@ class Phrase
         @doc_files = ""
         
         root = TkRoot.new { title "Phrase Finder" }
-        frame = Tk::Tile::Frame
-        TkLabel.new(root) do
+        content = Tk::Tile::Frame.new(root) {padding "5 5 12 0"}.grid :column => 0, :row => 0, :sticky => "nwes"
+        
+        TkGrid.columnconfigure root, 0, :weight => 1
+        TkGrid.rowconfigure root, 0, :weight => 1
+
+        file_title = Tk::Tile::Label.new(content) do
             text 'Choose a .docx file'
-            pack { side 'left' }
         end
 
-        file_upload = TkButton.new(root) do
+        file_upload = Tk::Tile::Button.new(content) do
             text "Upload"
-            pack("side" => "top", "padx"=> "50", "pady"=> "50")
         end
 
-        file_text = TkText.new(root) do
+        file_delete = Proc.new {
+            file_text.delete
+        }
+
+        file_text = TkListbox.new(content) do
             width 20    
             height 10
             borderwidth 1
             font TkFont.new('helvetica 11')
-            pack("side" => "right", "padx"=> "5", "pady"=> "5")
         end
 
         file_click = Proc.new {
@@ -63,13 +68,18 @@ class Phrase
             end
         }
 
-        phrase_text = TkText.new(root) do
-            width 30
-            height 30
+        phrase_text = TkText.new(content) do
+            width 40
+            height 20
             borderwidth 1
             font TkFont.new('helvetica 11')
-            pack("side" => "bottom",  "padx"=> "5", "pady"=> "5")
         end
+
+        file_title.grid :column => 0, :row => 0, :padx => 15, :pady => 15, :sticky => 'nsew'
+        file_upload.grid    :column => 0, :row => 0, :pady => 5
+        file_text.grid      :column => 0, :row => 2, :sticky => 'w', :padx => 20
+        phrase_text.grid      :column => 0, :row => 3, :sticky => 'w', :padx => 20
+
         
         file_upload.command = file_click
 
