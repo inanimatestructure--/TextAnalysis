@@ -8,35 +8,40 @@ class Phrase
     attr_reader :phrase_search, :phrases
 
     def initialize(phrases=nil,phrase_search=nil)
-        @phrase_search = phrase_search
-        @phrases = ["north", "this is a test", "nothin for me", "wind"] 
+        @phrase_search = []
+        @phrases = []
         @count = 0
     end
 
-    def parse_phrases
-        doc = Docx::Document.open('test.docx')
-        document = []
-        doc.each_paragraph do |pa|
-            document << pa
+    def parse_phrases(docxArray)
+        docxArray.each do |d| 
+            doc = Docx::Document.open(d)
+            document = []
+            doc.each_paragraph do |pa|
+                document << pa
+            end
+            @phrase_search << document.to_json
         end
-        @phrase_search = document.to_json
     end
 
     def find_phrases
-        @phrases.each do |ph|
-            phrase = @phrase_search.downcase.scan(ph)
-            occurrence = phrase.length
-            puts "#{ph} occurs #{occurrence} times"
+        fp = {}
+        @phrase_search.each do |sp|
+            @phrases.each do |ph|
+                phrase = sp.downcase.scan(ph)
+                occurrence = phrase.length
+                fp
+            end
         end
     end
 
-    def main 
-        self.parse_phrases
+    def main
+        self.parse_phrases([])
         self.find_phrases
         @doc_files = ""
         
         root = TkRoot.new { title "Phrase Finder" }
-        content = Tk::Tile::Frame.new(root) {padding "5 5 12 0"}.grid :column => 0, :row => 0, :sticky => "nwes"
+        content = Tk::Tile::Frame.new(root) {padding "6 6 14 0"}.grid :column => 0, :row => 0, :sticky => "nwes"
         
         TkGrid.columnconfigure root, 0, :weight => 1
         TkGrid.rowconfigure root, 0, :weight => 1
@@ -45,9 +50,15 @@ class Phrase
             text 'Choose a .docx file'
         end
 
+        phrase_title = Tk::Tile::Label.new(content) do
+            text 'Put each phrase or word on a separate line below'
+        end
+
         file_upload = Tk::Tile::Button.new(content) do
             text "Upload"
         end
+
+        file_phrases = TkText.new(content) {width 40; height 20}
 
         file_delete = Proc.new {
             file_text.delete
@@ -55,7 +66,7 @@ class Phrase
 
         file_text = TkListbox.new(content) do
             width 20    
-            height 10
+            height 20
             borderwidth 1
             font TkFont.new('helvetica 11')
         end
@@ -69,7 +80,7 @@ class Phrase
         }
 
         phrase_text = TkText.new(content) do
-            width 40
+            width 90
             height 20
             borderwidth 1
             font TkFont.new('helvetica 11')
@@ -78,7 +89,9 @@ class Phrase
         file_title.grid :column => 0, :row => 0, :padx => 15, :pady => 15, :sticky => 'nsew'
         file_upload.grid    :column => 0, :row => 0, :pady => 5
         file_text.grid      :column => 0, :row => 2, :sticky => 'w', :padx => 20
-        phrase_text.grid      :column => 0, :row => 3, :sticky => 'w', :padx => 20
+        phrase_text.grid      :column => 0, :row => 3, :sticky => 'w'
+        file_phrases.grid     :column => 1, :row => 2, :sticky => 'w', :padx => 20
+        phrase_title.grid     :column => 1, :row => 1, :sticky => 'w'
 
         
         file_upload.command = file_click
