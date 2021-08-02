@@ -26,14 +26,15 @@ class Phrase
 
     def find_phrases(doc_files)
         fp = []
-        doc_files
         @phrase_search.each_with_index do |sp,i|
-            puts doc_files[i]
-            @phrases.each do |ph|
-                ph = ph.strip
-                phrase = sp.downcase.scan(ph)
-                occurrence = phrase.length
-                fp.push({"count" => occurrence, "phrase" => ph, "document" => File.basename(doc_files[i]) })
+            if !doc_files[i].nil?
+                @phrases.each do |ph|
+                    ph = ph.strip
+                    phrase = sp.downcase.scan(ph)
+                    occurrence = phrase.length
+                    file = doc_files[i]
+                    fp.push({"count" => occurrence, "phrase" => ph, "document" => file })
+                end
             end
         end
         fp
@@ -72,23 +73,23 @@ class Phrase
 
         #textfields && listboxes
 
-        file_phrases = TkText.new(content) {width 40; height 20}
+        file_phrases = TkText.new(content) {width 40; height 15}
 
         file_text = TkListbox.new(content) do
             width 20    
-            height 20
+            height 15
             borderwidth 1
             font TkFont.new('helvetica 11')
         end
 
         phrase_text = TkText.new(content) do
-            width 50
-            height 40
-            borderwidth 1
+            width 70
+            height 15
             font TkFont.new('helvetica 11')
+            wrap "none"
         end
 
-        ys = Tk::Tile::Scrollbar.new(root) {orient 'vertical'; command proc{|*args| phrase_text.yview(*args);}}
+        ys = Tk::Tile::Scrollbar.new(content) {orient 'vertical'; command proc{|*args| phrase_text.yview(*args);}}
         phrase_text['yscrollcommand'] = proc{|*args| ys.set(*args);}
         ## canvas
 
@@ -119,12 +120,11 @@ class Phrase
             doc = doc.split(' ')
             doc.each do |doc|
                 file_text.insert 'end', File.basename(doc) + "\n"
-                @doc_files << doc
+                @doc_files << File.basename(doc)
             end
         }
-
         search_click = Proc.new{
-            phrase_text.insert 'end', ""
+            phrase_text.delete('1.0', 'end')
             self.parse_phrases(@doc_files)
             @phrases = []
             file_phrases.get('1.0','end').each_line do |line|
@@ -132,22 +132,23 @@ class Phrase
             end
 
             phrase_array = self.find_phrases(@doc_files)
+            puts phrase_array
             phrase_array.each do |pi|
                 phrase_text.insert 'end', "Document: " + pi["document"] + "\nPhrase: " + pi["phrase"] + "\nOccurs: " + pi["count"].to_s + " times\n\n" 
             end
 
         }
 
-        file_title.grid :column => 0, :row => 0, :rowspan => 2, :padx => 15, :pady => 15, :sticky => 'nsew'
+        file_title.grid :column => 0, :row => 0, :rowspan => 2, :sticky => 'nwes'
         phrase_title.grid     :column => 1, :row => 1
-        file_upload.grid    :column => 0, :row => 0, :rowspan => 2, :pady => 5
+        file_upload.grid    :column => 0, :row => 0, :pady => 5
         file_delete_btn.grid    :column => 0, :row => 2,:padx => 5, :sticky => 'w'
         file_text.grid      :column => 0, :row => 1, :rowspan => 2, :padx => 20
-        phrase_text.grid      :column => 0, :row => 3
+        phrase_text.grid      :column => 0, :row => 3, :sticky => 'nwes'
         file_phrases.grid     :column => 1, :row => 2, :sticky => 'w', :padx => 20
-        file_chart.grid      :column => 4, :row => 0, :rowspan => 4, :sticky => 'nsew', :padx => 10
-        ys.grid               :column => 0, :row => 2, :sticky => 'ns'
-        file_search.grid      :column => 0, :row => 3
+        file_chart.grid      :column => 4, :row => 0, :rowspan => 4, :sticky => 'nwes', :padx => 10
+        ys.grid               :column => 1, :row => 3, :sticky => 'ns'
+        file_search.grid      :column => 0, :row => 4, :pady => 10
 
         file_delete_btn.command = file_delete
         file_upload.command = file_click
