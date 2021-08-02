@@ -26,7 +26,9 @@ class Phrase
 
     def find_phrases(doc_files)
         fp = []
+        doc_files
         @phrase_search.each_with_index do |sp,i|
+            puts doc_files[i]
             @phrases.each do |ph|
                 ph = ph.strip
                 phrase = sp.downcase.scan(ph)
@@ -86,9 +88,23 @@ class Phrase
             font TkFont.new('helvetica 11')
         end
 
+        ys = Tk::Tile::Scrollbar.new(root) {orient 'vertical'; command proc{|*args| phrase_text.yview(*args);}}
+        phrase_text['yscrollcommand'] = proc{|*args| ys.set(*args);}
         ## canvas
 
-        file_chart = TkCanvas.new(content) { width 500; height 700; background 'gray75' } 
+        file_chart = TkCanvas.new(content) { width 500; height 700 }
+
+        TkcLine.new(file_chart,50,250,50,50,'width'=>2)
+        TkcLine.new(file_chart,50,250,250,250,'width'=>2)
+
+        1.upto(10) do |i|
+            x = 50 + (i*20)
+            y = 250 - (i *20)
+            TkcLine.new(file_chart,45,y,50,y)
+            TkcText.new(file_chart,46,y,'text'=>10*i,'anchor'=>'e')
+        end
+
+
 
         # action items on click
         file_delete = Proc.new {
@@ -108,12 +124,17 @@ class Phrase
         }
 
         search_click = Proc.new{
+            phrase_text.insert 'end', ""
             self.parse_phrases(@doc_files)
             @phrases = []
             file_phrases.get('1.0','end').each_line do |line|
                 @phrases << line            
             end
-            self.find_phrases(@doc_files)
+
+            phrase_array = self.find_phrases(@doc_files)
+            phrase_array.each do |pi|
+                phrase_text.insert 'end', "Document: " + pi["document"] + "\nPhrase: " + pi["phrase"] + "\nOccurs: " + pi["count"].to_s + " times\n\n" 
+            end
 
         }
 
@@ -122,11 +143,11 @@ class Phrase
         file_upload.grid    :column => 0, :row => 0, :rowspan => 2, :pady => 5
         file_delete_btn.grid    :column => 0, :row => 2,:padx => 5, :sticky => 'w'
         file_text.grid      :column => 0, :row => 1, :rowspan => 2, :padx => 20
-        phrase_text.grid      :column => 0, :row => 3, :rowspan => 2
+        phrase_text.grid      :column => 0, :row => 3
         file_phrases.grid     :column => 1, :row => 2, :sticky => 'w', :padx => 20
         file_chart.grid      :column => 4, :row => 0, :rowspan => 4, :sticky => 'nsew', :padx => 10
-
-        file_search.grid      :column => 1, :row => 3
+        ys.grid               :column => 0, :row => 2, :sticky => 'ns'
+        file_search.grid      :column => 0, :row => 3
 
         file_delete_btn.command = file_delete
         file_upload.command = file_click
