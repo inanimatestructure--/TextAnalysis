@@ -24,15 +24,14 @@ class Phrase
         end
     end
 
-    def find_phrases()
-        fp = {}
+    def find_phrases(doc_files)
+        fp = []
         @phrase_search.each_with_index do |sp,i|
             @phrases.each do |ph|
-                puts ph
                 ph = ph.strip
                 phrase = sp.downcase.scan(ph)
                 occurrence = phrase.length
-                fp["test"+i.to_s] = { "count": occurrence, "phrase": ph }
+                fp.push({"count" => occurrence, "phrase" => ph, "document" => File.basename(doc_files[i]) })
             end
         end
         fp
@@ -87,6 +86,10 @@ class Phrase
             font TkFont.new('helvetica 11')
         end
 
+        ## canvas
+
+        file_chart = TkCanvas.new(content) { width 500; height 700; background 'gray75' } 
+
         # action items on click
         file_delete = Proc.new {
             selected_item= file_text.curselection
@@ -110,7 +113,8 @@ class Phrase
             file_phrases.get('1.0','end').each_line do |line|
                 @phrases << line            
             end
-            puts self.find_phrases()
+            self.find_phrases(@doc_files)
+
         }
 
         file_title.grid :column => 0, :row => 0, :rowspan => 2, :padx => 15, :pady => 15, :sticky => 'nsew'
@@ -120,6 +124,7 @@ class Phrase
         file_text.grid      :column => 0, :row => 1, :rowspan => 2, :padx => 20
         phrase_text.grid      :column => 0, :row => 3, :rowspan => 2
         file_phrases.grid     :column => 1, :row => 2, :sticky => 'w', :padx => 20
+        file_chart.grid      :column => 4, :row => 0, :rowspan => 4, :sticky => 'nsew', :padx => 10
 
         file_search.grid      :column => 1, :row => 3
 
