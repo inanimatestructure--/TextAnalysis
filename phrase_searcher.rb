@@ -1,3 +1,4 @@
+#! /usr/bin/ruby
 require 'docx'
 require 'json'
 require 'tk'
@@ -195,8 +196,6 @@ class Phrase
             selected_item = doc_dropdown.curselection
             si = doc_dropdown.get(selected_item)
             si = si.strip
-            puts 'si strip'
-            puts si
             temp = []
             temp << si
             self.parse_phrases(temp)
